@@ -130,7 +130,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
             if (markerIds.size() >= 2) {
                 // 获取第一个和第二个Aruco码的中心点
-                cv::Point2f center1(0, 0), center2(0, 0);
+                cv::Point2f center1(0, 0), center2(0, 0), center3(0, 0), center4(0,0);
 
                 for (const auto& corner : markerCorners[0]) {
                     center1 += corner;
@@ -140,14 +140,29 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
                 for (const auto& corner : markerCorners[1]) {
                     center2 += corner;
                 }
-                center2 *= (1.0 / 4.0);
+                center2 *= (1.0 / 4.0); 
+
+                for (const auto& corner : markerCorners[2]) {
+                    center3 += corner;
+                }
+                center3 *= (1.0 / 4.0); 
+
+                for (const auto& corner : markerCorners[3]) {
+                    center4 += corner;
+                }
+                center4 *= (1.0 / 4.0); 
 
                 // 计算两个中心点之间的像素距离
-                double distance = std::sqrt(std::pow(center1.x - center2.x, 2) + std::pow(center1.y - center2.y, 2));
+                double distancex1 = std::sqrt(std::pow(center1.x - center2.x, 2) + std::pow(center1.y - center2.y, 2));
+                double distancex2 = std::sqrt(std::pow(center3.x - center4.x, 2) + std::pow(center3.y - center4.y, 2));
+                double distancey1 = std::sqrt(std::pow(center1.x - center3.x, 2) + std::pow(center1.y - center3.y, 2));
+                double distancey2 = std::sqrt(std::pow(center2.x - center4.x, 2) + std::pow(center2.y - center4.y, 2));
 
                 //在1m距离下中心点像素距离：250.5
                 //根据当前中心点像素距离计算目标距离
-                double dis = 251.9 / distance;
+                double disx = 251.9 / (distancex1 + distancex2);
+                double disy = 251.9 / (distancex1 + distancex2);
+                double dis = (disx + disy) / 2 ;
 
                 // 输出距离到终端
                 ROS_INFO("Distance between Aruco markers: %.2f pixels", distance);
