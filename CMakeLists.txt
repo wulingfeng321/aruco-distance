@@ -29,11 +29,11 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
 )
 
-add_executable(distance
+add_executable(aruco_scan
   src/main.cpp
 ) 
 
-target_link_libraries(distance
+target_link_libraries(aruco_scan
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
 )

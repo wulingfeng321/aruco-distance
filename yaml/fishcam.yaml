@@ -1,0 +1,26 @@
+image_width: 1280
+image_height: 960
+camera_name: fish_camera
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [646.35431,  -3.11559, 650.62915,
+           0.     , 638.9611 , 466.52045,
+           0.     ,   0.     ,   1.     ]
+distortion_model: equidistant
+distortion_coefficients:
+  rows: 1
+  cols: 4
+  data: [-0.089613, 0.059934, -0.044722, 0.013709]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1., 0., 0.,
+         0., 1., 0.,
+         0., 0., 1.]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [646.35431,  -3.11559, 650.62915,   0.     ,
+           0.     , 638.9611 , 466.52045,   0.     ,
+           0.     ,   0.     ,   1.     ,   0.     ]

@@ -1,0 +1,25 @@
+<launch>
+    <!-- 启动usb_cam节点 -->
+    <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
+        <param name="video_device" value="/dev/video3" />
+        <param name="image_width" value="1280" />
+        <param name="image_height" value="960" />
+        <param name="pixel_format" value="mjpeg" />
+        <param name="camera_frame_id" value="usb_cam" />
+        <param name="camera_name" value="fish_camera" /><!-- 相机名字 -->
+        <param name="camera_info_url" value="file:///home/hch/open_ws/src/aruco_scan/yaml/fishcam.yaml" /><!-- 相机参数文件 -->
+    </node>
+
+    <!-- 启动image_proc节点 -->
+    <group ns="usb_cam">
+        <node name="image_proc" pkg="image_proc" type="image_proc" output="screen">
+            <remap from="image_raw" to="image_raw" />
+            <remap from="camera_info" to="camera_info" />
+        </node>
+    </group>
+
+    <!-- 启动aruco_scan节点 -->
+    <node name="aruco_scan" pkg="aruco_scan" type="aruco_scan" output="screen">
+        <param name="camera_name" value="fish_camera" />
+    </node>
+</launch>
