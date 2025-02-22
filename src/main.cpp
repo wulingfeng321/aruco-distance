@@ -10,8 +10,26 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
     try {
         // 将ROS图像消息转换为OpenCV图像
         cv::Mat frame = cv_bridge::toCvShare(msg, "bgr8")->image;
-        //转换为灰度图
-        cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
+
+        // 转换为灰度图
+        cv::Mat gray;
+        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+
+        //从frame复制到gray
+        //gray = frame.clone();
+        cv::Mat gray1;
+        gray1 = gray.clone();
+
+        // 直方图均衡化
+        cv::equalizeHist(gray, gray);
+
+        // // 双边滤波
+        // cv::Mat newr;
+        // cv::bilateralFilter(gray,newr,9,50,50);
+        // gray=newr.clone();
+
+        // 自适应阈值处理
+        //cv::adaptiveThreshold(gray, gray, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 11, 2);
 
         // 定义Aruco码字典
         cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
@@ -21,11 +39,12 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
         std::vector<int> markerIds;
 
         // 检测Aruco码
-        cv::aruco::detectMarkers(frame, dictionary, markerCorners, markerIds);
+        cv::aruco::detectMarkers(gray, dictionary, markerCorners, markerIds);
 
         if (!markerIds.empty()) {
             // 绘制检测到的Aruco码
             cv::aruco::drawDetectedMarkers(frame, markerCorners, markerIds);
+            cv::aruco::drawDetectedMarkers(gray, markerCorners, markerIds);
 
             if (markerIds.size() >= 4) {
                 // 获取Aruco码的中心点
@@ -50,19 +69,19 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
                 double distancey1 = std::sqrt(std::pow(center1.x - center3.x, 2) + std::pow(center1.y - center3.y, 2));
                 double distancey2 = std::sqrt(std::pow(center2.x - center4.x, 2) + std::pow(center2.y - center4.y, 2));
 
-                //在1m距离下中心点像素距离：250.5
+                //在1m距离下中心点像素距离
                 //根据当前中心点像素距离计算目标距离
                 double disx = 251.9 / (distancex1 + distancex2);
                 double disy = 251.9 / (distancey1 + distancey2);
                 double distance = (disx + disy) / 2 ;
 
-                // 计算目标角度
-                double angle = std::atan2(center2.y - center1.y, center2.x - center1.x);
+                // 计算目标相对于相机的yaw
+                double yaw = std::atan(distancey1/distancey2);
 
                 // 输出距离和角度到终端
-                ROS_INFO("Distance between Aruco markers: %.2f pixels", distance);
-                ROS_WARN("DISTANCE: %.4fm", distance);
-                ROS_INFO("Angle: %.2f degrees", angle * 180.0 / CV_PI);
+                ROS_INFO("disx1:%.2f disx2:%.2f disy1:%.2f disy2:%.2f",distancex1,distancex2,distancey1,distancey2);
+                ROS_WARN("DISTANCE: %.4fm ", distance);
+                ROS_WARN("Yaw: %.2f ", yaw * 180.0 / CV_PI - 45);
             } else {
                 ROS_ERROR("Less than four Aruco markers detected.");
             }
@@ -71,7 +90,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg) {
         }
 
         // 显示结果
-        cv::imshow("Aruco Detection", frame);
+        // cv::imshow("yuantu", gray1);
+        cv::imshow("目标检测", gray);
         cv::waitKey(1);
     } catch (cv_bridge::Exception& e) {
         ROS_ERROR("cv_bridge exception: %s", e.what());
@@ -87,14 +107,8 @@ int main(int argc, char** argv) {
     image_transport::ImageTransport it(nh);
     image_transport::Subscriber sub = it.subscribe("/usb_cam/image_rect_color", 1, imageCallback);
 
-    // 创建OpenCV窗口
-    cv::namedWindow("Aruco Detection", cv::WINDOW_NORMAL);
-
     // 进入ROS事件循环
     ros::spin();
-
-    // 销毁OpenCV窗口
-    cv::destroyWindow("Aruco Detection");
 
     return 0;
 }
