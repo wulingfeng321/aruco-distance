@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   cv_bridge
   image_transport
-  custom_msgs
+  custom_msgs#自定义消息
 )
 #find_package(OpenCV REQUIRED)
 
@@ -23,6 +23,8 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(OpenCV REQUIRED)
 
 catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES aruco_scan
   CATKIN_DEPENDS roscpp rospy sensor_msgs cv_bridge
 )
 
@@ -33,6 +35,7 @@ include_directories(
 )
 
 add_executable(aruco_scan
+  src/aruco.cpp
   src/main.cpp
 ) 
 
